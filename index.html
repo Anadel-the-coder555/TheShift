@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Shift</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Main Screen -->
+  <div id="mainScreen" class="screen active">
+    <h1>The Shift</h1>
+    <button id="startBtn" class="main-button">START</button>
+  </div>
+
+  <!-- Character Screen -->
+  <div id="characterScreen" class="screen">
+    <h2>Choose Your Character</h2>
+    
+    <div class="character-options">
+      <button class="character-btn" data-character="Junnian">🐿️ Junnian</button>
+      <button class="character-btn" data-character="Halvyn">🐹 Halvyn</button>
+      <button class="character-btn" data-character="Chill">🐰 Chill</button>
+      <button class="character-btn" data-character="Mia">🐭 Mia</button>
+      <button class="character-btn" data-character="Yuba">🎀 Yuba</button>
+      <button class="character-btn" data-character="Lucio">🦔 Lucio</button>
+      <button class="character-btn" data-character="Bastien">🦌 Bastien</button>
+      <button class="character-btn" data-character="Aero">🦨 Aero</button>
+      <button class="character-btn" data-character="Amias">🦝 Amias</button>
+    </div>
+
+    <p id="selectedCharacter">Choose a character.</p>
+    <button id="toLevelBtn" class="nav-button" disabled>Next: Choose Level</button>
+  </div>
+
+  <!-- Level Screen -->
+<div id="levelScreen" class="screen">
+  <h3>Choose Level</h3>
+  <div class="level-options">
+    <button class="level-btn" data-level="1">1</button>
+    <button class="level-btn" data-level="2">2</button>
+    <button class="level-btn" data-level="3">3</button>
+    <button class="level-btn" data-level="4">4</button>
+    <button class="level-btn" data-level="5">5</button>
+    <button class="level-btn" data-level="6">6</button>
+    <button class="level-btn" data-level="7">7</button>
+  </div>
+</div>
+
+<div id="gameScreen" class="screen">
+  <h2>Game On!</h2>
+  <canvas id="gameCanvas" width="800" height="600" style="border: 2px solid white;"></canvas>
+</div>
+
+  <div class="background"></div>
+  <audio id="clickSound" src="sounds/click.mp3"></audio>
+  <audio id="bgMusic" src="music/The Shift - Main Theme.mp3" loop preload="auto"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>

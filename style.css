@@ -1,0 +1,137 @@
+h1 {
+  font-family: 'Amatic SC', cursive;
+  font-size: 100px;
+  text-align: center;
+  color: white;
+  margin-top: 20px;
+}
+
+body {
+  margin: 0;
+  background-color: black;
+  font-family: Arial, sans-serif;
+  color: white;
+  overflow: hidden;
+}
+
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('image.png/new\ one.png');
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+.main-button {
+  position: absolute;
+  top: 200;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Bree Serif', serif;
+  font-size: 72px;
+  padding: 40px 60px;
+  background-color: #f5f5f5;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.main-button:hover {
+  background-color: #daeccb;
+}
+
+.nav-button {
+  font-size: 40px;
+  padding: 12px 24px;
+  margin-top: 20px;
+  background-color: #f5f5f5;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: #daeccb;
+}
+.screen {
+  display: none;
+  height: 100vh;
+  width: 100vw;
+  text-align: center;
+  padding-top: 100px;
+}
+
+.screen.active {
+  display: block;
+}
+.character-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 20px 0;
+}
+
+/* Character buttons */
+.character-btn {
+  font-family: 'Amatic SC', cursive;
+  font-size: 50px;
+  padding: 10px 20px;
+  border: 2px solid #333;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.character-btn:hover {
+  background-color: #daeccb;
+  transform: scale(1.05);
+}
+
+.character-btn.selected {
+  background-color: #daeccb;
+  border-color: #000;
+  box-shadow: 0 0 10px #aaca98;
+}
+.level-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 20px 0;
+}
+
+.level-btn {
+  font-size: 70px;
+  padding: 12px 24px;
+  background-color: #f5f5f5;
+  color: black;
+  border: 2px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.level-btn:hover {
+  background-color: #daeccb;
+}
+h2 {
+  font-family: 'Amatic SC', cursive;
+  font-size: 70px;
+  text-align: center;
+  color: white;
+  margin-top: 20px;
+}h3 {
+  font-family: 'Amatic SC', cursive;
+  font-size: 100px;
+  text-align: center;
+  color: white;
+  margin-top: 20px;
+}
