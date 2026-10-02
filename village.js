@@ -1314,6 +1314,14 @@ window.returnToThistledown = (from, gameId) => {
     toast = { text:'Back in the Portal HQ', t:2.2 };
     fadeA = 1; fadeDir = -1; fadeWarp = true; fadeMid = null; showScreen(screenEl); return;
   }
+  // the balloon (inside the windmill) and the boat (in the Boat Cove): back to exactly where that game started
+  if (from === 'windmill' || from === 'cove'){
+    const home = WARP_HOMES[from](); currentWorld = null; currentWorldId = null; ws = null; currentShop = null;
+    scene = home.scene; currentSecret = home.secret ? SECRETS[home.secret] : null; P.x = home.x; P.face = 1; P.vx = 0; P.target = null; pending = null;
+    camX = clamp(P.x - W*.42, 0, (scene === 'mill' ? MILL_W : W) - W);
+    toast = { text:'Back in Thistledown', t:2.2 };
+    fadeA = 1; fadeDir = -1; fadeWarp = true; fadeMid = null; showScreen(screenEl); return;
+  }
   scene = 'village'; currentWorld = null; currentShop = null; currentSecret = null; ws = null;
   P.x = THISTLEDOWN_SPOTS[from](); P.face = 1; P.vx = 0; P.target = null; pending = null;
   camX = clamp(P.x - W*.42, 0, WORLD - W);
@@ -3099,7 +3107,106 @@ function gateGlint(sx, sy){
   ctx.fillStyle = `rgba(200,160,255,${a*.9})`; ctx.beginPath();
   ctx.moveTo(sx, sy - k); ctx.lineTo(sx + 1.5, sy - 1.5); ctx.lineTo(sx + k, sy); ctx.lineTo(sx + 1.5, sy + 1.5); ctx.lineTo(sx, sy + k); ctx.lineTo(sx - 1.5, sy + 1.5); ctx.lineTo(sx - k, sy); ctx.lineTo(sx - 1.5, sy - 1.5); ctx.closePath(); ctx.fill();
 }
-const gateSpot = (x, y, here) => ({ x, r:24, hit:[x - 18, x + 18], hitY:[y - 26, y + 26], stand:x, gap:0, hidden:true, label:'', open:() => enterHQ(here) });
+// ---------- the portal hubs inside each world ----------
+// Every world's Realm Gate is a place you can go inside: step into the stone face, squeeze behind the
+// vending machine, climb into the water tower… Each room has a door back out, something to look at, and one
+// secret (but rather obvious) thing that glows and hums. Touch it and you're in the Portal HQ with every portal.
+// (Thistledown's Hollow Tree and the Moonlit Lake's cabin already work like this, so they keep their own rooms.)
+const HUB_X = 560;
+function hubGlow(x, y, col, r = 70){ const k = .55 + .25*Math.sin(t*2.6); const g = ctx.createRadialGradient(x, y, 4, x, y, r*1.6); g.addColorStop(0, `rgba(${col},${k})`); g.addColorStop(1, `rgba(${col},0)`); ctx.fillStyle = g; circle(x, y, r*1.6);
+  for (let i = 0; i < 8; i++){ const a = t*.8 + i/8*Math.PI*2, rr2 = r + Math.sin(t*2 + i)*10; ctx.fillStyle = `rgba(255,255,255,${.5 + .4*Math.sin(t*3 + i)})`; circle(x + Math.cos(a)*rr2, y + Math.sin(a)*rr2*.7, 2.2); } }
+function hubSwirl(x, y, r, col){ ctx.save(); ctx.translate(x, y); ctx.rotate(reduceMotion ? 0 : t*1.6); for (let i = 0; i < 4; i++){ ctx.strokeStyle = `rgba(${col},${.9 - i*.18})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, r - i*r*.2, (r - i*r*.2)*1.3, 0, i, i + Math.PI*1.4); ctx.stroke(); } ctx.restore(); }
+function hubDoor(col, sky){ ctx.fillStyle = sky; ctx.fillRect(60, GROUND - 120, 64, 120); ctx.strokeStyle = col; ctx.lineWidth = 6; ctx.strokeRect(60, GROUND - 120, 64, 120); ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(66, GROUND - 114, 20, 108); }
+const HUB_ROOMS = {
+  jungle:{ name:'Inside the Stone Face', enter:'Step into the stone face', wall:['#6a5a3a', '#4a3e28'], floor:'#3a3020', door:['#3a2a18', '#f2c86a'], col:'255,210,110',
+    decor(){ for (let y = 30; y < GROUND; y += 36) for (let x = (y/36 % 2)*40; x < W; x += 80){ ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(x, y, 76, 32); }
+      ctx.strokeStyle = '#3f8a4a'; ctx.lineWidth = 5; for (const vx of [180, 300, 700]){ ctx.beginPath(); ctx.moveTo(vx, 0); for (let s = 1; s < 8; s++) ctx.lineTo(vx + Math.sin(t + s + vx)*8, s*30); ctx.stroke(); }
+      for (const tx of [220, 400]){ ctx.fillStyle = '#5a3a1a'; ctx.fillRect(tx - 4, GROUND - 160, 8, 50); const f = 1 + Math.sin(t*9 + tx)*.15; ctx.fillStyle = '#ffb030'; ctx.beginPath(); ctx.ellipse(tx, GROUND - 170, 9*f, 16*f, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#ffe080'; circle(tx, GROUND - 166, 5); }
+      ctx.fillStyle = '#c9a13a'; ctx.beginPath(); ctx.ellipse(300, GROUND - 22, 24, 14, 0, 0, 7); ctx.fill(); circle(300, GROUND - 46, 14); },
+    secret:{ label:'Press the glowing sun carving', draw(x, y){ ctx.fillStyle = '#e8b040'; circle(x, y, 46); ctx.fillStyle = '#c9902a'; for (let i = 0; i < 12; i++){ const a = i/12*Math.PI*2 + t*.2; ctx.beginPath(); ctx.moveTo(x + Math.cos(a)*44, y + Math.sin(a)*44); ctx.lineTo(x + Math.cos(a + .13)*66, y + Math.sin(a + .13)*66); ctx.lineTo(x + Math.cos(a + .26)*44, y + Math.sin(a + .26)*44); ctx.fill(); } hubSwirl(x, y, 26, '255,240,200'); } },
+    look:{ x:300, label:'Look at the golden idol', title:'The Golden Idol', text:'A little golden statue of an acorn wearing a crown. Someone has left it a banana.' } },
+  nebula:{ name:'Inside the Star Chime', enter:'Step inside the big star chime', wall:['#2a1850', '#140c30'], floor:'#3a2a5a', door:['#5a4a8a', '#0e0a24'], col:'200,160,255',
+    decor(){ for (let i = 0; i < 60; i++){ ctx.fillStyle = `rgba(255,255,255,${.3 + .4*Math.sin(t*2 + i)})`; circle(hash(i)*W, hash(i + 60)*(GROUND - 20), 1.4); }
+      for (const [cx, h, c] of [[200, 180, '#b58ae6'], [260, 240, '#7fe0e6'], [330, 200, '#e8a0e0'], [720, 220, '#7fe0e6'], [770, 160, '#b58ae6']]){ const wob = Math.sin(t*2 + cx)*2; ctx.fillStyle = c; ctx.globalAlpha = .8; ctx.beginPath(); ctx.moveTo(cx - 16 + wob, GROUND); ctx.lineTo(cx + wob, GROUND - h); ctx.lineTo(cx + 16 + wob, GROUND); ctx.fill(); ctx.globalAlpha = 1; } },
+    secret:{ label:'Touch the glowing constellation', draw(x, y){ const pts = [[-50, 30], [-20, -20], [10, 10], [40, -40], [55, 20]]; ctx.strokeStyle = 'rgba(232,208,255,.9)'; ctx.lineWidth = 2; ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(x + px, y + py) : ctx.moveTo(x + px, y + py)); ctx.stroke(); for (const [px, py] of pts){ ctx.fillStyle = '#fff'; circle(x + px, y + py, 5); } hubSwirl(x, y, 22, '220,200,255'); } },
+    look:{ x:260, label:'Listen to the crystals', title:'The Humming Crystals', text:'Every crystal hums a different note. Together they sound like a lullaby for the stars.' } },
+  city:{ name:'Behind the Vending Machine', enter:'Squeeze behind the vending machine', wall:['#2a1848', '#160c2a'], floor:'#1a1428', door:['#5adcff', '#0b0620'], col:'181,138,230',
+    decor(){ for (let k = 0; k < 4; k++){ const x = 180 + k*64; for (let r = 0; r < 3 - (k % 2); r++){ ctx.fillStyle = ['#ff6ad5', '#5adcff', '#ffe66e', '#82ffa0'][(k + r) % 4]; rr(x, GROUND - 46 - r*46, 56, 42, 4); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x, GROUND - 26 - r*46, 56, 4); } }
+      neonText('STOCKROOM', 300, 80, 18, '90,220,255', true); ctx.strokeStyle = 'rgba(90,220,255,.3)'; ctx.lineWidth = 2; for (let x = 0; x < W; x += 40){ ctx.beginPath(); ctx.moveTo(x, 110); ctx.lineTo(x, 116); ctx.stroke(); } },
+    secret:{ label:'Press the big purple button', draw(x, y){ ctx.fillStyle = '#3a3448'; rr(x - 70, y - 50, 140, 150, 12); ctx.fill(); ctx.strokeStyle = '#5adcff'; ctx.lineWidth = 2; rr(x - 70, y - 50, 140, 150, 12); ctx.stroke(); for (let i = 0; i < 6; i++){ ctx.fillStyle = Math.sin(t*4 + i) > 0 ? '#82ffa0' : '#2a4a3a'; circle(x - 50 + i*20, y - 30, 4); }
+      ctx.fillStyle = '#7a4ab8'; circle(x, y + 30, 34); ctx.fillStyle = '#b58ae6'; circle(x, y + 26, 28); ctx.fillStyle = 'rgba(255,255,255,.5)'; circle(x - 9, y + 16, 8); hubSwirl(x, y + 26, 16, '255,240,255'); } },
+    look:{ x:240, label:'Look at the soda crates', title:'The Stockroom', text:'Crates and crates of fizzy drinks: Neon Lemon, Galaxy Grape, and one crate labelled “DO NOT SHAKE”.' } },
+  sea:{ name:'Inside the Giant Clam', enter:'Swim inside the giant clam', wall:['#f0c8d8', '#d898b8'], floor:'#e8d0b0', door:['#c890b0', '#2a7ab0'], col:'230,190,255',
+    decor(){ ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 3; for (let k = 0; k < 9; k++){ ctx.beginPath(); ctx.moveTo(400, GROUND + 60); ctx.lineTo(k*100, 0); ctx.stroke(); }
+      for (let i = 0; i < 12; i++){ const bx = hash(i)*W, by = GROUND - wrap(t*30 + i*40, GROUND); ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, 4, 0, 7); ctx.stroke(); }
+      for (const [x, c] of [[220, '#ff9ab8'], [290, '#ffd0a0'], [740, '#c8a0ff']]){ ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x, GROUND); for (let k = 0; k <= 6; k++){ const a = Math.PI + k/6*Math.PI; ctx.lineTo(x + Math.cos(a)*22, GROUND - 6 + Math.sin(a)*20); } ctx.fill(); } },
+    secret:{ label:'Touch the swirling pearl', draw(x, y){ const g = ctx.createRadialGradient(x - 14, y - 14, 4, x, y, 50); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#c8a0f0'); ctx.fillStyle = g; circle(x, y, 50); hubSwirl(x, y, 30, '150,90,220'); } },
+    look:{ x:260, label:'Look at the little shells', title:'The Pearl Room', text:'The walls shimmer pink and silver, like the inside of a seashell. It smells like the sea and, somehow, like strawberries.' } },
+  fantasy:{ name:'Beneath the Sword in the Stone', enter:'Climb down the steps under the sword', wall:['#6a6878', '#4a4858'], floor:'#5a4a3a', door:['#3a3848', '#8bbf6a'], col:'190,220,255',
+    decor(){ for (let y = 20; y < GROUND; y += 40) for (let x = (y/40 % 2)*50; x < W; x += 100){ ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, 96, 36); }
+      for (const [bx, c] of [[200, '#c8304a'], [330, '#3a5ab8'], [760, '#c8304a']]){ ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(bx - 24, 40); ctx.lineTo(bx + 24, 40); ctx.lineTo(bx + 24, 170); ctx.lineTo(bx, 150); ctx.lineTo(bx - 24, 170); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#f2c230'; circle(bx, 90, 9); }
+      ctx.fillStyle = '#c9a13a'; rr(240, GROUND - 40, 70, 40, 6); ctx.fill(); ctx.fillStyle = '#8a6a2a'; ctx.fillRect(240, GROUND - 28, 70, 5); ctx.fillStyle = '#f2c230'; circle(275, GROUND - 46, 8); },
+    secret:{ label:'Look into the shimmering mirror', draw(x, y){ ctx.fillStyle = '#c9a13a'; ctx.beginPath(); ctx.ellipse(x, y, 48, 70, 0, 0, 7); ctx.fill(); const g = ctx.createLinearGradient(x, y - 60, x, y + 60); g.addColorStop(0, '#dfe8f4'); g.addColorStop(1, '#8a9ab8'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, 38, 60, 0, 0, 7); ctx.fill(); hubSwirl(x, y, 26, '160,120,230'); } },
+    look:{ x:275, label:'Peek into the treasure chest', title:'The Royal Vault', text:'Gold coins, a jeweled crown… and a very old sandwich. The king really should clean this out.' } },
+  west:{ name:'Inside the Water Tower', enter:'Climb up into the water tower', wall:['#9a6a3a', '#7a4a28'], floor:'#6a4a2a', door:['#5a3a1a', '#f6c07a'], col:'255,200,140',
+    decor(){ ctx.strokeStyle = 'rgba(40,24,12,.35)'; ctx.lineWidth = 3; for (let x = 20; x < W; x += 34){ ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, GROUND); ctx.stroke(); }
+      ctx.strokeStyle = '#4a4a4a'; ctx.lineWidth = 6; for (const y of [70, 200, 330]){ ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(100,170,220,.45)'; ctx.fillRect(140, GROUND - 10, 320, 10); for (let k = 0; k < 3; k++){ const dx = 180 + k*110, dy = wrap(t*80 + k*60, GROUND - 40); ctx.fillStyle = 'rgba(140,200,240,.7)'; ctx.beginPath(); ctx.ellipse(dx, dy, 3, 5, 0, 0, 7); ctx.fill(); } },
+    secret:{ label:'Peer through the glowing knot-hole', draw(x, y){ ctx.fillStyle = '#5a3a1a'; ctx.beginPath(); ctx.ellipse(x, y, 40, 50, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#2a1408'; ctx.beginPath(); ctx.ellipse(x, y, 26, 34, 0, 0, 7); ctx.fill(); hubSwirl(x, y, 20, '220,160,255'); } },
+    look:{ x:300, label:'Look at the drips', title:'The Water Tower', text:'Drip… drip… drip. A family of tiny frogs has turned the leaky corner into a swimming pool.' } },
+  underground:{ name:'Inside the Giant Crystal', enter:'Step into the giant crystal', wall:['#2a4a5a', '#1a2a3a'], floor:'#2a3a4a', door:['#7fe0e6', '#120e1a'], col:'160,240,255',
+    decor(){ for (let i = 0; i < 14; i++){ const x = hash(i)*W, y = hash(i + 14)*(GROUND - 40), s = 30 + hash(i + 28)*50; ctx.fillStyle = `rgba(${['127,224,230', '181,138,230', '160,240,255'][i % 3]},.25)`; ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s*.6, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s*.6, y); ctx.closePath(); ctx.fill(); }
+      ctx.fillStyle = 'rgba(255,255,255,.08)'; for (let k = 0; k < 6; k++){ ctx.beginPath(); ctx.moveTo(k*160, 0); ctx.lineTo(k*160 + 60, 0); ctx.lineTo(k*160 + 200, GROUND); ctx.lineTo(k*160 + 140, GROUND); ctx.fill(); } },
+    secret:{ label:'Touch the purple heart of the crystal', draw(x, y){ ctx.fillStyle = '#b58ae6'; ctx.beginPath(); ctx.moveTo(x, y - 60); ctx.lineTo(x + 40, y); ctx.lineTo(x, y + 60); ctx.lineTo(x - 40, y); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.moveTo(x, y - 60); ctx.lineTo(x + 14, y); ctx.lineTo(x, y + 20); ctx.fill(); hubSwirl(x, y, 20, '255,240,255'); } },
+    look:{ x:280, label:'Look at your reflection', title:'The Crystal Room', text:'Hundreds of tiny chinchillas look back at you from every crystal face. They all wave when you do.' } },
+  nograv:{ name:'Inside the Floating Orb', enter:'Float into the purple orb', wall:['#e6d0ff', '#c8b0f0'], floor:'#b8e0c8', door:['#9a7ac8', '#ffd8ea'], col:'200,160,255',
+    decor(){ onSky(() => { ctx.fillStyle = '#ff9ec8'; rr(180, GROUND - 60, 120, 14, 6); ctx.fill(); ctx.fillRect(190, GROUND - 46, 8, 46); ctx.fillRect(282, GROUND - 46, 8, 46); ctx.fillStyle = '#9be3c8'; rr(200, GROUND - 92, 40, 32, 8); ctx.fill(); ctx.fillStyle = '#ffd08a'; circle(700, GROUND - 40, 30); });
+      for (let i = 0; i < 6; i++){ const fx = 160 + i*110, fy = 200 + Math.sin(t + i)*30; ctx.save(); ctx.translate(fx, fy); ctx.rotate(t*.5 + i); ctx.fillStyle = TOPSY_TREES[i % 4]; rr(-12, -8, 24, 16, 5); ctx.fill(); ctx.restore(); } },
+    secret:{ label:'Step into the swirl in the floor', floor:true, draw(x, y){ ctx.fillStyle = 'rgba(160,110,220,.4)'; ctx.beginPath(); ctx.ellipse(x, GROUND - 4, 70, 18, 0, 0, 7); ctx.fill(); ctx.save(); ctx.translate(x, GROUND - 4); ctx.scale(1, .26); hubSwirl(0, 0, 60, '120,60,200'); ctx.restore(); } },
+    look:{ x:240, label:'Look up at the table on the ceiling', title:'The Upside-Down Room', text:'The table, the chairs and a bowl of fruit are all stuck to the ceiling. A grape falls UP while you watch.' } },
+  arts:{ name:'Through the Golden Frame', enter:'Step through the golden frame', wall:['#f6e8c8', '#e8d0a8'], floor:'#a07a58', door:['#c9a13a', '#f6c890'], col:'255,220,150',
+    decor(){ for (const [px, py, w, h, c] of [[170, 90, 90, 70, '#9fd3ef'], [290, 70, 70, 100, '#e0a0b8'], [700, 90, 80, 70, '#a8e0a8']]){ ctx.fillStyle = c; ctx.fillRect(px, py, w, h); ctx.fillStyle = 'rgba(255,255,255,.4)'; circle(px + w*.3, py + h*.4, h*.2); ctx.strokeStyle = '#c9a13a'; ctx.lineWidth = 6; ctx.strokeRect(px - 3, py - 3, w + 6, h + 6); }
+      ctx.fillStyle = '#7a5230'; ctx.fillRect(160, GROUND - 4, 520, 4); ctx.fillStyle = '#8a5a3a'; rr(240, GROUND - 70, 50, 70, 4); ctx.fill(); ctx.fillStyle = '#e0708f'; circle(265, GROUND - 78, 12); },
+    secret:{ label:'Step into the swirling empty frame', draw(x, y){ ctx.strokeStyle = '#c9a13a'; ctx.lineWidth = 12; ctx.strokeRect(x - 56, y - 76, 112, 152); ctx.fillStyle = 'rgba(200,160,255,.25)'; ctx.fillRect(x - 50, y - 70, 100, 140); hubSwirl(x, y, 30, '170,110,230'); } },
+    look:{ x:265, label:'Look at the paintings', title:'The Painted Gallery', text:'Every painting is of Harmony Hollow at golden hour… and in each one, a little painted chinchilla is waving at you.' } },
+  warp:{ name:'Inside the Giant Eye', enter:'Walk into the giant eye', wall:['#3a1a5a', '#1a0a30'], floor:'#2a1848', door:['#e8a0ff', '#4a2a7a'], col:'232,160,255',
+    decor(){ ctx.save(); ctx.translate(400, 220); ctx.rotate(t*.1); for (let k = 0; k < 10; k++){ ctx.rotate(Math.PI/5); ctx.strokeStyle = 'rgba(232,160,255,.08)'; ctx.lineWidth = 40; ctx.beginPath(); ctx.moveTo(60, 0); ctx.lineTo(600, 0); ctx.stroke(); } ctx.restore();
+      for (let i = 0; i < 5; i++){ const cx = 160 + i*130, cy = 120 + Math.sin(t + i)*20; ctx.save(); ctx.translate(cx, cy); ctx.scale(1, .7 + Math.sin(t*.7 + i)*.2); ctx.fillStyle = '#e8d8a8'; circle(0, 0, 22); ctx.fillStyle = '#fff8e8'; circle(0, 0, 17); ctx.strokeStyle = '#3a2416'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(t*(1 + i*.3))*12, Math.sin(t*(1 + i*.3))*12); ctx.moveTo(0, 0); ctx.lineTo(0, -8); ctx.stroke(); ctx.restore(); } },
+    secret:{ label:'Step through the iris door', draw(x, y){ ctx.fillStyle = '#f6f0ff'; ctx.beginPath(); ctx.ellipse(x, y, 70, 46, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#8a4ac8'; circle(x, y, 34); ctx.fillStyle = '#1a0a30'; circle(x, y, 16 + Math.sin(t*2)*4); hubSwirl(x, y, 26, '255,200,255'); } },
+    look:{ x:290, label:'Look at the melting clocks', title:'The Clock Room', text:'The clocks float about, ticking in every direction at once. One of them says it’s Tuesday. It isn’t.' } },
+};
+let hubFrom = null;
+function enterHub(id){
+  closePanels(); hubFrom = id;
+  transition(() => { scene = 'secret'; currentSecret = SECRETS['hub_' + id]; P.x = 160; P.face = 1; P.vx = 0; P.target = null; pending = null; camX = 0; toast = { text:HUB_ROOMS[id].name, t:2.4 }; });
+}
+function leaveHub(id){
+  closePanels();
+  // back out in front of the landmark (in the right half of a joined world)
+  transition(() => { scene = 'world'; currentSecret = null; hubFrom = null; P.x = WORLDS[id].hub().x - 70; P.face = 1; P.vx = 0; P.target = null; pending = null; camX = clamp(P.x - W*.42, 0, currentWorld.w - W); });
+}
+function drawHubRoom(id){
+  const h = HUB_ROOMS[id], g = ctx.createLinearGradient(0, 0, 0, GROUND); g.addColorStop(0, h.wall[0]); g.addColorStop(1, h.wall[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  h.decor();
+  ctx.fillStyle = h.floor; ctx.fillRect(0, GROUND, W, H - GROUND); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, GROUND, W, 6);
+  hubDoor(h.door[0], h.door[1]);
+  // the secret: it glows, hums and sparkles, so you can't really miss it
+  const sy = GROUND - 150 + Math.sin(t*1.5)*4; hubGlow(HUB_X, h.secret.floor ? GROUND - 10 : sy, h.col, h.secret.floor ? 50 : 70); h.secret.draw(HUB_X, sy);
+  drawPlayer();
+  const vg = ctx.createRadialGradient(W/2, H/2, 220, W/2, H/2, 540); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.4)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+}
+for (const id of Object.keys(HUB_ROOMS)){
+  const h = HUB_ROOMS[id];
+  SECRETS['hub_' + id] = { hub:id, start:160, draw:() => drawHubRoom(id), max:740, spots:[
+    { x:92, r:55, hit:[60, 124], stand:110, gap:0, label:'Go back outside', open:() => leaveHub(id) },
+    { x:h.look.x, r:60, hit:[h.look.x - 50, h.look.x + 50], stand:h.look.x - 60, gap:0, label:h.look.label, open:() => openMystery(h.look.title, h.look.text, '') },
+    { x:HUB_X, r:80, hit:[HUB_X - 80, HUB_X + 80], hitY:[GROUND - 240, GROUND + 20], stand:HUB_X - 40, gap:0, label:h.secret.label, open:() => { P.anim.happy = 2; enterHQ(id); } },
+  ]};
+}
+
+// a world's Realm Gate: you go inside its landmark first (Thistledown's tree and the lake cabin are already inside)
+const gateSpot = (x, y, here) => HUB_ROOMS[here] ? { x, r:70, hit:[x - 60, x + 60], stand:x - 60, gap:0, label:HUB_ROOMS[here].enter, open:() => enterHub(here) }
+  : { x, r:24, hit:[x - 18, x + 18], hitY:[y - 26, y + 26], stand:x, gap:0, hidden:true, label:'', open:() => enterHQ(here) };
 
 // ---------- the Portal Headquarters ----------
 // every realm's hidden gate leads into this round chamber. Five portals line the back wall, one per realm;
@@ -3722,6 +3829,7 @@ renderWallet();
 window.realmNow = () => scene === 'world' ? worldHalfId()
   : scene === 'secret' && (currentSecret === SECRETS.lakecabin || currentSecret === SECRETS.firstcabin) ? currentWorldId
   : scene === 'secret' && currentSecret === SECRETS.hq ? null      // the Portal Headquarters sits between realms
+  : scene === 'secret' && currentSecret && currentSecret.hub ? (currentWorld && currentWorld.joined && currentWorld.joined.oneSong ? currentWorld.joined.idA : currentSecret.hub)   // inside a world's portal hub
   : 'thistledown';                                                 // the village, its shops, the windmill, the meadow and secret places
 let lastRealm;
 function update(dt){
@@ -3775,6 +3883,7 @@ camX = clamp(P.x - W*.42, 0, WORLD - W);
 // or coming back later puts you right where you left off. Mid-game, it's the spot you started from.
 const PLACE_KEY = 'theShift.place';
 const PLACE_NAMES = { hq:'the Portal Headquarters', tree:'The Hollow Tree', well:'The Crystal Grotto', cove:'The Boat Cove', lakecabin:'The Little Cabin', firstcabin:'the Moonlit Caf\u00e9', grandma:'Grandma Wolf’s Cottage', holiday:'the Holiday House' };
+for (const id of Object.keys(HUB_ROOMS)) PLACE_NAMES['hub_' + id] = HUB_ROOMS[id].name.replace(/^(Inside|Behind|Beneath|Through) the /, 'the ');
 let placeT = 0;
 const secretKey = sec => Object.keys(SECRETS).find(k => SECRETS[k] === sec) || null;
 function savePlace(){

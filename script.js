@@ -40,8 +40,9 @@ const raceMusic = document.getElementById('raceMusic');     // Don't Mess With A
 const westernMusic = document.getElementById('westernMusic'); // Turn Back, for the Outlaws of the West
 const filmMusic = document.getElementById('filmMusic'); // Turn Back, for the Outlaws of the West
 const coralMusic = document.getElementById('coralMusic'); // Heart and Soul, for the Coral Reef
+const outlawMusic = document.getElementById('outlawMusic'); // Don't Mess With A Spy, for the Outlaws of the West
 // worlds with their own song while you explore them
-const REALM_SONGS = { thistledown: villageMusic, moonlake: lakeMusic, jungle: jungleMusic, city: cityMusic, west: westernMusic, silentfilm: filmMusic, sea: coralMusic };
+const REALM_SONGS = { thistledown: villageMusic, moonlake: lakeMusic, jungle: jungleMusic, city: cityMusic, west: westernMusic, silentfilm: filmMusic, sea: coralMusic, };
 
 // Screen elements
 const mainScreen = document.getElementById('mainScreen');
@@ -90,7 +91,7 @@ function showScreen(screen) {
 }
 
 // games play the game song, except the world games listed here; everywhere else plays the main theme
-const WORLD_GAME_SONGS = { nebula: climbMusic, cafe: homeMusic, moonlake: homeMusic, jungle: vineMusic, ski: skiMusic, race: raceMusic, outlaws: raceMusic, ghosthotel: raceMusic, silentfilm: filmMusic };
+const WORLD_GAME_SONGS = { nebula: climbMusic, cafe: homeMusic, moonlake: homeMusic, jungle: vineMusic, ski: skiMusic, race: raceMusic, outlaws: raceMusic, ghosthotel: raceMusic, silentfilm: filmMusic, outlaws: outlawMusic };
 let musicStarted = false;
 function currentTrack() {
   const worldGame = document.getElementById('worldGameScreen');

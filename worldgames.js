@@ -83,10 +83,11 @@ let hole = null, holeAt = Infinity, holeClock = 0, holeHere = null;
 const HOLE = { x:W - 104, y:146, r:46 };
 function enterHole(){
   if (!hole || state !== 'play') return;
-  const tg = hole.tg, here = holeHere; hole = null; state = 'done'; Save.addSeeds(G.seeds()); replay = null;
+  const tg = hole.tg, here = holeHere, origin = replay; hole = null; state = 'done'; Save.addSeeds(G.seeds()); replay = null;
   if (tg.locked){
-    // a world you haven't found: play its game; win and you arrive there, lose and you go back where you were
-    startWorldGame(tg.game, 'hq', { trip:true, label:'Continue', leave:'← Back', done:won => won ? window.warpToWorld(tg.game, 'hq') : window.warpFromGame(here) });
+    // a world you haven't found: play its game; win and you arrive there (it's unlocked), lose and you're put
+    // back exactly where you started the game that had the warp (its own "back" step does that)
+    startWorldGame(tg.game, 'hq', { trip:true, label:'Continue', leave:'← Back', done:won => won ? window.warpToWorld(tg.game, 'hq') : origin ? origin.done(false) : window.warpFromGame(here) });
   } else if (window.warpFromGame) window.warpFromGame(tg.id);
 }
 function drawHole(){
