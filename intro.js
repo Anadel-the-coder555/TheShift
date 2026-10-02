@@ -174,7 +174,11 @@ function sceneWalk(){
     let x, y;
     if (k < .55){ const u = k/.55; x = x0 + (WELL_X - x0)*u; y = GROUND - 110*Math.sin(Math.PI*u*.75); }
     else { const s = k - .55; x = WELL_X; y = GROUND - 110*Math.sin(Math.PI*.75) + 900*s*s; }
-    if (y < GROUND + CHIN_H) chin(x - cam, y, { grounded: false, tilt: reduceMotion ? .3 : Math.min(1.3, k*2.4), dazed: k > .3 });
+    // once over the hole, only what's above the rim or inside the opening shows (nothing pokes out below the well)
+    ctx.save();
+    if (k > .3){ ctx.beginPath(); ctx.rect(0, 0, W, RIM); ctx.ellipse(wx, RIM + 2, 72, 13, 0, 0, Math.PI*2); ctx.clip(); }
+    if (y < RIM + CHIN_H + 20) chin(x - cam, y, { grounded: false, tilt: reduceMotion ? .3 : Math.min(1.3, k*2.4), dazed: k > .3 });
+    ctx.restore();
     if (k < .7){
       ctx.font = '700 34px "Pixelify Sans", monospace'; ctx.textAlign = 'center'; ctx.lineWidth = 5; ctx.strokeStyle = '#2b1a0c'; ctx.fillStyle = '#ffe066';
       const py = Math.min(y, GROUND) - CHIN_H - 12; ctx.strokeText('!', x - cam, py); ctx.fillText('!', x - cam, py); ctx.textAlign = 'left';
