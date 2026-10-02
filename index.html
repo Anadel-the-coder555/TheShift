@@ -29,6 +29,7 @@
 
       <div class="hints">
         <span>Click the chinchilla to say hi</span>
+        <button type="button" class="link-btn" id="replayIntroBtn">Watch the intro again</button>
       </div>
     </div>
   </div>
@@ -365,6 +366,35 @@
   </div>
 
 
+  <!-- First-visit intro: a warning, then how the chinchilla got here (intro.js) -->
+  <div id="introScreen" class="intro" hidden>
+    <div class="intro-card" id="introWarning" role="dialog" aria-modal="true" aria-labelledby="introWarnTitle">
+      <span class="intro-badge">&#9888; Interdimensional notice</span>
+      <h2 id="introWarnTitle">Before you go any further…</h2>
+      <p>Playing <b>The Shift</b> may cause you to be warped across space, time and at least one garden. Travelers usually come out the other side <b>about half alive</b>, fully covered in fur, and wearing a hat they don't remember buying.</p>
+      <p>Possible side effects include:</p>
+      <ul>
+        <li>Whiskers</li>
+        <li>An overwhelming urge to collect seeds</li>
+        <li>Hopping when excited</li>
+        <li>The hat. The hat does not come off. We've tried.</li>
+      </ul>
+      <p class="intro-fine">The Shift is not responsible for lost thumbs, found tails, or becoming emotionally attached to a raccoon bandit.</p>
+      <div class="intro-actions">
+        <button type="button" class="btn btn-primary" id="introAccept">I accept my fluffy fate</button>
+        <button type="button" class="btn btn-secondary" id="introDecline">Skip the story</button>
+      </div>
+    </div>
+    <div class="intro-story" id="introStory" hidden>
+      <canvas id="introCanvas" aria-label="A chinchilla in a hat walks through a meadow, trips into a well, falls through a purple warp and lands in Thistledown"></canvas>
+      <p class="intro-caption" id="introCaption" aria-live="polite"></p>
+      <div class="intro-actions">
+        <button type="button" class="btn btn-secondary btn-sm" id="introSkip">Skip <kbd>Esc</kbd></button>
+        <button type="button" class="btn btn-primary btn-lg" id="introEnter" hidden>Enter Thistledown</button>
+      </div>
+    </div>
+  </div>
+
   <audio id="clickSound" src="sounds/click.mp3"></audio>
   <audio id="bgMusic" src="music/The Shift - Main Theme.mp3" loop preload="auto"></audio>
   <audio id="gameMusic" src="music/Feel The Magic (V.1) copy.mp3" loop preload="none"></audio>
@@ -380,6 +410,7 @@
   <audio id="westernMusic" src="music/TurnBack.mp3" loop preload="none"></audio>
   <audio id="filmMusic" src="music/FrenchPiano.mp3" loop preload="none"></audio>
   <audio id="coralMusic" src="music/Heart and Soul copy.mp3" loop preload="none"></audio>
+  <audio id="outlawMusic" src="music/Don't Mess With A Spy.mp3" loop preload="none"></audio>
 
 
 
@@ -1122,5 +1153,6 @@ window.Chin = { newAnim, tickAnim, draw(target, ...args){ const saved = ctx; ctx
   <script src="balloon.js"></script>
   <script src="boat.js"></script>
   <script src="worldgames.js"></script>
+  <script src="intro.js"></script>
 </body>
 </html>
