@@ -1,329 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Shift</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <!-- Home Screen -->
-  <div id="mainScreen" class="screen active">
-    <div class="wrap">
-      <header>
-        <h1>The Shift</h1>
-        <button class="btn btn-secondary" id="soundBtn" aria-pressed="true">Music: On</button>
-      </header>
+<title>Burrow Bound</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: one game cabinet — name strip, 5:3 platformer canvas, touch pad on phones, key hints on desktop. Single committed look: meadow at golden hour. */
+:root{
+  --ground:#2b2118; --panel:#3a2c20; --hat:#c9854a; --cream:#f6ead6; --muted:#b9a48a;
+  --display:"Pixelify Sans","Courier New",monospace;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--ground);color:var(--cream);font-family:var(--body);padding-inline:16px;padding-block:20px;box-sizing:border-box;display:flex;justify-content:center}
+.wrap{width:100%;max-width:880px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 16px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,4vw,2.1rem);margin:0;letter-spacing:.02em;color:var(--hat)}
+.sub{color:var(--muted);font-size:.95rem;margin:0}
+.stage{position:relative;width:100%;aspect-ratio:5/3;max-width:100%;border-radius:10px;overflow:hidden;background:#86c3d8;border:4px solid var(--panel);box-shadow:0 10px 30px rgba(0,0,0,.35);touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100%;height:100%}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px;background:rgba(43,33,24,.6);backdrop-filter:blur(2px)}
+.overlay[hidden]{display:none}
+.overlay h2{font-family:var(--display);font-size:clamp(1.6rem,5vw,2.6rem);margin:0;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+.overlay p{margin:0;max-width:40ch;line-height:1.5}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;justify-content:center;font-size:.88rem;max-width:46ch}
+.stats{font-family:var(--display);font-size:1.1rem;display:flex;gap:6px 22px;flex-wrap:wrap;justify-content:center;font-variant-numeric:tabular-nums}
+button.big{font-family:var(--display);font-weight:700;font-size:1.15rem;background:var(--hat);color:#2b1a0c;border:0;border-radius:8px;padding:10px 26px;cursor:pointer;box-shadow:0 4px 0 #8a5528}
+button.big:hover{filter:brightness(1.06)}
+button.big:active{transform:translateY(3px);box-shadow:0 1px 0 #8a5528}
+button:focus-visible{outline:3px solid var(--cream);outline-offset:3px}
+.hints{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--muted);font-size:.9rem}
+kbd{font-family:var(--display);background:var(--panel);color:var(--cream);border-radius:4px;padding:1px 7px;font-size:.85rem}
+.pad{display:none;justify-content:center;align-items:center;gap:12px}
+.pad .dirs{display:flex;gap:12px}
+.pad button{font-family:var(--display);font-size:1.6rem;width:72px;height:72px;border-radius:50%;border:0;background:var(--panel);color:var(--cream);box-shadow:0 4px 0 #1c140d;touch-action:none}
+.pad button.jump{width:100%;max-width:320px;height:72px;border-radius:14px;background:var(--hat);color:#2b1a0c;box-shadow:0 4px 0 #8a5528;font-size:1.1rem}
+.pad button.on{transform:translateY(3px);box-shadow:0 1px 0 #1c140d;filter:brightness(1.2)}
+@media (hover:none) and (pointer:coarse){ .pad{display:flex} .hints{display:none} }
+</style>
 
-      <div class="stage stage-home">
-        <canvas id="homeCanvas" aria-label="A chinchilla in a hat, waiting for you"></canvas>
-        <div class="home-panel">
-          <p class="eyebrow">A chinchilla adventure</p>
-          <h2 class="logo">The Shift</h2>
-          <p class="tagline">Jump, collect, and find your way home.</p>
-          <button id="startBtn" class="btn btn-primary btn-lg">Play</button>
-        </div>
-      </div>
-
-      <div class="hints">
-        <span>Click the chinchilla to say hi</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Village Screen -->
-  <div id="villageScreen" class="screen">
-    <div class="wrap">
-      <header>
-        <div>
-          <h1>Thistledown Village</h1>
-          <p class="sub">Shop, cross the bridge, and pick a quest from the board.</p>
-        </div>
-        <div class="header-actions">
-          <span class="wallet" title="Seeds in your wallet"><i class="seed-icon"></i><b class="wallet-seeds">0</b></span>
-          <button class="btn btn-secondary" id="satchelBtn">Satchel</button>
-          <button class="btn btn-secondary" id="villageHomeBtn">← Home</button>
-        </div>
-      </header>
-
-      <div class="stage">
-        <canvas id="villageCanvas" aria-label="A village lane with little shops"></canvas>
-        <div class="prompt-wrap">
-          <button class="btn btn-primary" id="shopPrompt" hidden><span id="shopPromptName"></span> <kbd>E</kbd></button>
-        </div>
-
-        <div class="overlay shop-overlay" id="shopPanel" hidden>
-          <div class="shop-card" role="dialog" aria-labelledby="shopName">
-            <div class="shop-head">
-              <img id="shopKeeperImg" alt="" />
-              <div>
-                <h2 id="shopName"></h2>
-                <p id="shopGreeting"></p>
-              </div>
-            </div>
-            <ul class="shop-items" id="shopItems"></ul>
-            <div class="shop-foot">
-              <p class="shop-msg" id="shopMsg" role="status"></p>
-              <div class="shop-actions">
-                <span class="wallet"><i class="seed-icon"></i><b class="wallet-seeds">0</b></span>
-                <button class="btn btn-secondary" id="shopClose">Leave shop</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay shop-overlay" id="boardPanel" hidden>
-          <div class="shop-card" role="dialog" aria-labelledby="boardTitle">
-            <h2 id="boardTitle">Quest Board</h2>
-            <p>Pick a quest to head out into the world. Finish it for a reward.</p>
-            <ul class="shop-items" id="questItems"></ul>
-            <div class="shop-foot">
-              <p class="shop-msg"></p>
-              <button class="btn btn-secondary" id="boardClose">Close</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay shop-overlay" id="itemPanel" hidden>
-          <div class="shop-card item-card" role="dialog" aria-labelledby="itemName">
-            <div class="item-head">
-              <canvas id="itemCanvas" aria-hidden="true"></canvas>
-              <div>
-                <h2 id="itemName"></h2>
-                <p id="itemDesc"></p>
-                <p class="item-price"><i class="seed-icon"></i><b id="itemPrice"></b> seeds <span id="itemOwned"></span></p>
-              </div>
-            </div>
-            <div class="shop-foot">
-              <p class="shop-msg" id="itemMsg" role="status"></p>
-              <div class="shop-actions">
-                <span class="wallet"><i class="seed-icon"></i><b class="wallet-seeds">0</b></span>
-                <button class="btn btn-secondary" id="itemClose">Put it back</button>
-                <button class="btn btn-primary" id="itemBuy">Buy</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay shop-overlay" id="realmPanel" hidden>
-          <div class="shop-card mystery-card" role="dialog" aria-labelledby="realmTitle">
-            <h2 id="realmTitle">The Realm Gate</h2>
-            <p>The air shimmers purple. Through it you can see glimpses of every realm you’ve opened.</p>
-            <ul class="shop-items" id="realmList"></ul>
-            <div class="shop-foot">
-              <p class="shop-msg">Win a world’s game to open its way.</p>
-              <button class="btn btn-secondary" id="realmClose">Close</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay shop-overlay" id="secretPanel" hidden>
-          <div class="shop-card mystery-card" role="dialog" aria-labelledby="secretTitle">
-            <h2 id="secretTitle"></h2>
-            <p id="secretText"></p>
-            <div class="shop-foot">
-              <p class="shop-msg" id="secretFoot">A secret for another day.</p>
-              <button class="btn btn-secondary" id="secretClose">Close</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay shop-overlay" id="notePanel" hidden>
-          <div class="shop-card" role="dialog" aria-labelledby="noteTitle">
-            <h2 id="noteTitle">The Old Chest</h2>
-            <p id="noteLead"></p>
-            <div class="note-paper">
-              <p>To whoever finds this: the old balloon upstairs still flies. Fly it past the storms to Lantern Cliffs, and light the festival with three sky lanterns.</p>
-              <p class="note-sign">— a friend of the windmill</p>
-            </div>
-            <div class="shop-foot">
-              <p class="shop-msg"></p>
-              <div class="shop-actions">
-                <button class="btn btn-secondary" id="noteClose">Later</button>
-                <button class="btn btn-primary" id="noteClimb">Climb to the balloon</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay shop-overlay" id="satchelPanel" hidden>
-          <div class="shop-card" role="dialog" aria-labelledby="satchelTitle">
-            <h2 id="satchelTitle">Your Satchel</h2>
-            <p id="satchelEmpty">Nothing in here yet. Visit a shop!</p>
-            <ul class="shop-items" id="satchelItems"></ul>
-            <div class="shop-foot">
-              <p class="shop-msg"><span id="secretsFound"></span><br>Clover Charms are used up at the start of your next meadow run.</p>
-              <button class="btn btn-secondary" id="satchelClose">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pad">
-        <div class="dirs">
-          <button id="vLeft" aria-label="Walk left">◀</button>
-          <button id="vRight" aria-label="Walk right">▶</button>
-        </div>
-      </div>
-
-      <div class="hints">
-        <span><kbd>←</kbd> <kbd>→</kbd> or click the lane to walk</span>
-        <span>Click a shop, or press <kbd>E</kbd> at its door, to go inside</span>
-        <span>The Quest Board is across the bridge</span>
-        <span><kbd>Esc</kbd> to leave</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Balloon Screen (the windmill's secret) -->
-  <div id="balloonScreen" class="screen">
-    <div class="wrap">
-      <header>
-        <div>
-          <h1>Up, Up and Away</h1>
-          <p class="sub">A secret found inside the windmill.</p>
-        </div>
-        <button class="btn btn-secondary" id="balloonBackBtn">← Windmill</button>
-      </header>
-
-      <div class="stage">
-        <canvas id="balloonCanvas" aria-label="A hot air balloon floating over the treetops"></canvas>
-        <div class="overlay" id="balloonTitle">
-          <h2>Up, Up and Away</h2>
-          <p>The old balloon still flies! Hold to fire the burner and rise, and let go to drift down. Float all the way to Lantern Cliffs.</p>
-          <div class="legend">
-            <span>Hold Space, ↑ or the mouse to rise</span>
-            <span>Birds and storm clouds tear the balloon</span>
-            <span>Updrafts lift you up</span>
-            <span>Find the three sky lanterns</span>
-            <span>3 patches before you land</span>
-          </div>
-          <button class="btn btn-primary" id="balloonStart">Take off</button>
-        </div>
-        <div class="overlay" id="balloonEnd" hidden>
-          <h2 id="bEndTitle"></h2>
-          <p id="bEndText"></p>
-          <div class="stats" id="bEndStats"></div>
-          <div class="home-actions">
-            <button class="btn btn-primary" id="balloonAgain">Fly again</button>
-            <button class="btn btn-secondary" id="balloonToMill">Back to the windmill</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="pad">
-        <button class="jump" id="burnBtn" aria-label="Hold to fire the burner">Hold to rise</button>
-      </div>
-
-      <div class="hints">
-        <span>Hold <kbd>Space</kbd>, <kbd>↑</kbd> or click to rise, let go to sink</span>
-        <span><kbd>P</kbd> to pause</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Boat Screen (the secret under the bridge) -->
-  <div id="boatScreen" class="screen">
-    <div class="wrap">
-      <header>
-        <div>
-          <h1>Row the Dragonfly</h1>
-          <p class="sub">Down the river from the cove under the bridge.</p>
-        </div>
-        <button class="btn btn-secondary" id="boatBackBtn">← Cove</button>
-      </header>
-
-      <div class="stage">
-        <canvas id="boatCanvas" aria-label="A little rowboat on a winding river, seen from above"></canvas>
-        <div class="overlay" id="boatTitle">
-          <h2>Row the Dragonfly</h2>
-          <p>The little boat is untied and ready. Follow the river past the meadow, through the dark tunnel, and find out where it goes.</p>
-          <div class="legend">
-            <span>← → or hold a side to steer</span>
-            <span>Hold ↑ or Space to row faster, ↓ to slow down</span>
-            <span>Rocks and logs knock planks loose</span>
-            <span>Whirlpools spin you around</span>
-            <span>Find the three glow lilies</span>
-          </div>
-          <button class="btn btn-primary" id="boatStart">Push off</button>
-        </div>
-        <div class="overlay" id="boatEnd" hidden>
-          <h2 id="boatEndTitle"></h2>
-          <p id="boatEndText"></p>
-          <div class="stats" id="boatEndStats"></div>
-          <div class="home-actions">
-            <button class="btn btn-primary" id="boatAgain">Row again</button>
-            <button class="btn btn-secondary" id="boatToCove">Back to the cove</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="pad">
-        <div class="dirs"><button id="rowLeft" aria-label="Steer left">◀</button></div>
-        <button class="jump" id="rowHard" aria-label="Row faster">Row</button>
-        <div class="dirs"><button id="rowRight" aria-label="Steer right">▶</button></div>
-      </div>
-
-      <div class="hints">
-        <span><kbd>←</kbd> <kbd>→</kbd> to steer</span>
-        <span>Hold <kbd>↑</kbd> or <kbd>Space</kbd> to row faster, <kbd>↓</kbd> to slow down</span>
-        <span><kbd>P</kbd> to pause</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- World Game Screen: the game inside a warp hole -->
-  <div id="worldGameScreen" class="screen">
-    <div class="wrap">
-      <header>
-        <div>
-          <h1 id="wgName"></h1>
-          <p class="sub" id="wgSub"></p>
-        </div>
-        <button class="btn btn-secondary" id="wgLeaveBtn">← Thistledown</button>
-      </header>
-
-      <div class="stage">
-        <canvas id="wgCanvas" aria-label="A game inside another world"></canvas>
-        <div class="overlay" id="wgTitle">
-          <h2 id="wgTitleH"></h2>
-          <p id="wgTitleP"></p>
-          <div class="legend" id="wgLegend"></div>
-          <button class="btn btn-primary" id="wgStart">Start</button>
-        </div>
-        <div class="overlay" id="wgEnd" hidden>
-          <h2 id="wgEndH"></h2>
-          <p id="wgEndP"></p>
-          <div class="stats" id="wgEndStats"></div>
-          <button class="btn btn-primary" id="wgContinue"></button>
-        </div>
-      </div>
-
-      <div class="pad">
-        <div class="dirs">
-          <button id="wgLeft" aria-label="Left">◀</button>
-          <button id="wgUp" aria-label="Up">▲</button>
-          <button id="wgDown" aria-label="Down">▼</button>
-          <button id="wgRight" aria-label="Right">▶</button>
-        </div>
-        <button class="jump" id="wgAction">Go</button>
-      </div>
-
-      <div class="hints" id="wgHints"></div>
-    </div>
-  </div>
-
-  <!-- Game Screen -->
-  <div id="gameScreen" class="screen">
 <div class="wrap">
   <header>
-    <div>
-      <h1>Burrow Bound</h1>
-      <p class="sub">Get home under the moon, and bring the acorns.</p>
-    </div>
-    <button class="btn btn-secondary" id="backBtn">← Village</button>
+    <h1>Burrow Bound</h1>
+    <p class="sub">Get home under the moon, and bring the acorns.</p>
   </header>
 
   <div class="stage" id="stage">
@@ -339,16 +56,13 @@
         <span>Berries heal a heart</span>
         <span>50 seeds earn an extra hat</span>
       </div>
-      <button class="btn btn-primary" id="playBtn">Start</button>
+      <button class="big" id="startBtn">Start</button>
     </div>
     <div class="overlay" id="endScreen" hidden>
       <h2 id="endTitle">Home at last!</h2>
       <p id="endText"></p>
       <div class="stats" id="endStats"></div>
-      <div class="home-actions">
-        <button class="btn btn-primary" id="againBtn">Play again</button>
-        <button class="btn btn-secondary" id="toVillageBtn">Back to village</button>
-      </div>
+      <button class="big" id="againBtn">Play again</button>
     </div>
   </div>
 
@@ -362,37 +76,13 @@
     <span><kbd>P</kbd> to pause</span>
   </div>
 </div>
-  </div>
 
-
-  <audio id="clickSound" src="sounds/click.mp3"></audio>
-  <audio id="bgMusic" src="music/The Shift - Main Theme.mp3" loop preload="auto"></audio>
-  <audio id="gameMusic" src="music/Feel The Magic (V.1) copy.mp3" loop preload="none"></audio>
-  <audio id="climbMusic" src="music/Climbing - The Shift.mp3" loop preload="none"></audio>
-  <audio id="homeMusic" src="music/Take Me Home copy.mp3" loop preload="none"></audio>
-  <audio id="lakeMusic" src="music/Soft-Flame.mp3" loop preload="none"></audio>
-  <audio id="vineMusic" src="music/Otherside (Without Lead Vocal).mp3" loop preload="none"></audio>
-  <audio id="jungleMusic" src="music/Heart and Soul copy.mp3" loop preload="none"></audio>
-  <audio id="villageMusic" src="music/Out of My Head copy.mp3" loop preload="none"></audio>
-  <audio id="cityMusic" src="music/Calling....mp3" loop preload="none"></audio>
-  <audio id="skiMusic" src="music/Dragonfly High copy.mp3" loop preload="none"></audio>
-  <audio id="raceMusic" src="music/Climbing - The Shift.mp3" loop preload="none"></audio>
-  <audio id="westernMusic" src="music/TurnBack.mp3" loop preload="none"></audio>
-  <audio id="filmMusic" src="music/FrenchPiano.mp3" loop preload="none"></audio>
-  <audio id="coralMusic" src="music/Heart and Soul copy.mp3" loop preload="none"></audio>
-
-
-
-  <script src="script.js"></script>
 <script>
 (() => {
 const W = 800, H = 480, T = 40;
-const cv = document.getElementById('c'); let ctx = cv.getContext('2d');
-const homeCv = document.getElementById('homeCanvas'), homeCtx = homeCv.getContext('2d');
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-function fit(){ const dpr = Math.min(window.devicePixelRatio||1, 2);
-  cv.width = homeCv.width = W*dpr; cv.height = homeCv.height = H*dpr;
-  ctx.setTransform(dpr,0,0,dpr,0,0); homeCtx.setTransform(dpr,0,0,dpr,0,0); }
+function fit(){ const dpr = Math.min(window.devicePixelRatio||1, 2); cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
 fit(); addEventListener('resize', fit);
 
 // ---------- the chinchilla parts ----------
@@ -441,7 +131,7 @@ function drawChin(skin, a, x, y, o){
 }
 
 // ---------- level ----------
-const LEVEL = ["...................................................................................................................................................................................................................................", "...................................................................................................................................................................................................................................", "......................................................................A...........................................................................A................................................................................", "................................................................................................................................................-----......................o.o.o...................................................", "....................................................................SSSSS..........................o.o.o...........................................................................................................................", "..........C.CRC...................................................................................b.........................................---...................SSSS..............................CCC.......o.o.o.o..............", "...........................................o.o.o..........................CC.....................................................................................SSSSS.............................................................", ".................................o........-------...............SSS.....................................................................CRC.....................SSSSSS...SSS.........................A.............................", "................................SS...........................................................------...-----....................................................SSSSSSS...SSS.......................................................", ".P..........e.......o.o.o.....SSSS...e..................................x.....................................e.............K........f.......e......f.........SSSSSSSS...SSS...........b.......e...e...e...............f.....G.....", "##################################...#############################################^^^########..............###########################################################...SSS..#####################################################", "##################################...########################################################..............###########################################################...SSS..#####################################################"];
+const LEVEL = ["...................................................................................................................................................................................................................................", "...................................................................................................................................................................................................................................", "......................................................................A...........................................................................A................................................................................", "................................................................................................................................................-----......................o.o.o...................................................", "....................................................................SSSSS..........................o.o.o...........................................................................................................................", "..........C.CRC...................................................................................b.........................................---...................SSSS..............................CQC.......o.o.o.o..............", "...........................................o.o.o..........................CC.....................................................................................SSSSS.............................................................", ".................................o........-------...............SSS.....................................................................CRC.....................SSSSSS...SSS.......................................................", "................................SS...........................................................------...-----....................................................SSSSSSS...SSS.......................................................", ".P..........e.......o.o.o.....SSSS...e..................................x.....................................e.............K........f.......e......f.........SSSSSSSS...SSS...........b.......e...e...e...............f.....G.....", "##################################...#############################################^^^########..............###########################################################...SSS..#####################################################", "##################################...########################################################..............###########################################################...SSS..#####################################################"];
 const ROWS = LEVEL.length, COLS = LEVEL[0].length, LW = COLS*T;
 let map, enemies, items, crates, platforms, lanterns, start, goal, bumps;
 const SOLID = new Set(['#','S','C','R','Q','U']);
@@ -475,8 +165,6 @@ const solidAt = (c, r) => SOLID.has(tile(c, r));
 let state = 'title', t = 0, camX = 0, look = 0, shake = 0;
 let readyGo = 0, ready = 0, lives = 3, hearts = 3, seeds = 0, acorns = 0, time = 0, respawn = null, deadT = 0, winT = 0;
 let parts = [], pops = [];
-// with all three golden acorns, a tropical flower appears floating up ahead: a warp hole in disguise
-let warpFlower = null, warpT = 0;
 const P = { x:0, y:0, w:38, h:56, vx:0, vy:0, face:1, onGround:false, riding:null, inv:0, dazed:0, anim:newAnim() };
 const buddy = newAnim();
 const keys = {}; let jumpHeld = false, jumpBuf = 0, coyote = 0;
@@ -484,14 +172,10 @@ const keys = {}; let jumpHeld = false, jumpBuf = 0, coyote = 0;
 function placePlayer(at){ ready = 1.1; P.face = 1; P.x = at.x - P.w/2; P.y = at.y - P.h; P.vx = 0; P.vy = 0; P.inv = 0; P.dazed = 0; P.riding = null; camX = Math.max(0, Math.min(LW - W, at.x - W*.35)); }
 function newGame(){
   loadLevel(false); lives = 3; hearts = 3; seeds = 0; acorns = 0; time = 0; respawn = start;
-  placePlayer(start); parts = []; pops = []; state = 'play'; warpFlower = null;
-  if (Save.use('charm')){ lives++; pop(P.x+P.w/2, P.y-40, 'Clover Charm: extra hat!', '#b7e39a'); }
+  placePlayer(start); parts = []; pops = []; state = 'play';
   document.getElementById('titleScreen').hidden = true; document.getElementById('endScreen').hidden = true;
 }
-document.getElementById('playBtn').onclick = newGame;
-const gameScreenEl = document.getElementById('gameScreen');
-const onGameScreen = () => gameScreenEl.classList.contains('active');
-document.getElementById('backBtn').onclick = () => { if (state==='play') state = 'paused'; showScreen(document.getElementById('villageScreen')); };
+document.getElementById('startBtn').onclick = newGame;
 document.getElementById('againBtn').onclick = newGame;
 loadLevel(false); placePlayer(start);
 
@@ -499,7 +183,6 @@ loadLevel(false); placePlayer(start);
 function jumpDown(){ if (!jumpHeld){ jumpBuf = .14; } jumpHeld = true; }
 function jumpUp(){ jumpHeld = false; }
 addEventListener('keydown', e => {
-  if (!onGameScreen()) return;
   const k = e.key.toLowerCase();
   if ([' ','arrowup','arrowleft','arrowright','arrowdown'].includes(k)) e.preventDefault();
   keys[k] = true;
@@ -507,7 +190,7 @@ addEventListener('keydown', e => {
   if (k==='p'){ if (state==='play') state='paused'; else if (state==='paused') state='play'; }
   if (k==='enter' && (state==='title'||state==='over'||state==='won')) newGame();
 });
-addEventListener('keyup', e => { if (!onGameScreen()) return; const k = e.key.toLowerCase(); keys[k] = false; if ([' ','arrowup','w'].includes(k)) jumpUp(); });
+addEventListener('keyup', e => { const k = e.key.toLowerCase(); keys[k] = false; if ([' ','arrowup','w'].includes(k)) jumpUp(); });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; jumpHeld = false; touch.l = touch.r = false; if (state==='play') state='paused'; });
 const touch = { l:false, r:false };
 function hold(id, on, off){ const b = document.getElementById(id);
@@ -617,16 +300,6 @@ function updatePlayer(dt){
   }
   // lanterns
   for (const l of lanterns) if (!l.lit && Math.abs(l.x - (P.x+P.w/2)) < 30){ l.lit = true; respawn = {x:l.x, y:l.y}; pop(l.x, l.y-80, 'Checkpoint', '#ffe9a8'); burst(l.x, l.y-60, '#ffe27a', 14); }
-  // the disguised warp: appears a little ahead once you have all three acorns; jump into it to go
-  // (only once you've made it home 3 times)
-  if (acorns >= 3 && !warpFlower && Save.tally('levelWins') >= 3){
-    let fx = P.x + P.w/2 + 380, fy = P.y + P.h - 110;
-    while (fy > T && solidAt(Math.floor(fx/T), Math.floor(fy/T))) fy -= T;
-    if (fx < goal.x - 200) warpFlower = { x:fx, y:fy, got:false }; else warpFlower = { got:true };
-  }
-  if (warpFlower && !warpFlower.got && Math.abs(warpFlower.x - (P.x + P.w/2)) < 30 && warpFlower.y > P.y - 20 && warpFlower.y < P.y + P.h + 10){
-    warpFlower.got = true; state = 'warping'; warpT = 0; P.vx = 0; P.anim.happy = 3;
-  }
   // home
   if (P.x + P.w/2 >= goal.x - 20 && P.onGround){ state = 'won'; winT = 0; P.anim.happy = 4; buddy.happy = 4; buddy.chew = 1; P.face = 1; }
 }
@@ -679,16 +352,6 @@ function update(dt){
       else { hearts = 3; loadLevel(true); placePlayer(respawn); P.inv = 1.2; state = 'play';
              for (const l of lanterns) if (respawn.x === l.x) l.lit = true; }
     }
-  } else if (state==='warping'){
-    // swirled away into the flower, off to the Golden Jungle's game
-    warpT += dt;
-    P.x += (warpFlower.x - P.w/2 - P.x)*Math.min(1, dt*3); P.y += (warpFlower.y - P.h/2 - P.y)*Math.min(1, dt*3);
-    if (warpT > 1.2){
-      Save.addSeeds(seeds);
-      state = 'title'; document.getElementById('titleScreen').hidden = false; document.getElementById('endScreen').hidden = true;
-      loadLevel(false); placePlayer(start);
-      startWorldGame('jungle', 'square');
-    }
   } else if (state==='won'){
     winT += dt;
     P.vx = winT < 1.1 ? 120 : 0; moveX(P, P.vx*dt);
@@ -706,16 +369,12 @@ function update(dt){
 }
 
 function showEnd(won){
-  Save.addSeeds(seeds); // spendable in the village shops
-  if (won) Save.addTally('levelWins');
-  const questDone = won && acorns >= 3 && !Save.flag('quest1');
-  if (questDone){ Save.setFlag('quest1'); Save.addSeeds(20); }
   const s = document.getElementById('endStats');
   document.getElementById('endTitle').textContent = won ? 'Home at last!' : 'Nap time';
   document.getElementById('endText').textContent = won
     ? (acorns >= 3 ? 'Biscuit lit the lantern, and you brought all three golden acorns. The burrow is stocked for winter.' : `Biscuit lit the lantern for you. You found ${acorns} of the 3 golden acorns. The others are still out there.`)
     : 'Your chinchilla is out of hats and curled up for a nap. Try again from the start of the meadow.';
-  s.innerHTML = `<span>Golden acorns ${acorns}/3</span><span>Seeds ${seeds}</span>` + (won ? `<span>Time ${time.toFixed(1)} s</span>` : '') + `<span>Wallet ${Save.seeds()}</span>` + (questDone ? '<span>Quest complete! Junnian paid you 20 seeds</span>' : '');
+  s.innerHTML = `<span>Golden acorns ${acorns}/3</span><span>Seeds ${seeds}</span>` + (won ? `<span>Time ${time.toFixed(1)} s</span>` : '');
   document.getElementById('endScreen').hidden = false;
 }
 
@@ -897,18 +556,6 @@ function drawItem(it){
   }
   ctx.restore();
 }
-function drawWarpFlower(f){
-  const x = f.x - camX, y = f.y + Math.sin(t*2)*4; if (x < -60 || x > W + 60) return;
-  const g = ctx.createRadialGradient(x, y, 4, x, y, 50); g.addColorStop(0, 'rgba(255,200,90,.5)'); g.addColorStop(1, 'rgba(255,200,90,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 50, 0, 7); ctx.fill();
-  ctx.save(); ctx.translate(x, y); ctx.rotate(reduceMotion ? 0 : t*.4);
-  ctx.fillStyle = '#3f7a2a'; for (const a of [.6, 2.4, 4.3]){ ctx.save(); ctx.rotate(a); ctx.beginPath(); ctx.ellipse(0, 24, 7, 15, 0, 0, 7); ctx.fill(); ctx.restore(); }
-  for (let p=0;p<5;p++){ ctx.save(); ctx.rotate(p/5*Math.PI*2); const pg = ctx.createLinearGradient(0, 0, 0, -22); pg.addColorStop(0, '#ffd24a'); pg.addColorStop(1, '#e0502a');
-    ctx.fillStyle = pg; ctx.beginPath(); ctx.ellipse(0, -12, 9, 14, 0, 0, 7); ctx.fill(); ctx.restore(); }
-  ctx.fillStyle = '#b8286a'; ctx.beginPath(); ctx.arc(0, 0, 5, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#ffe066'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(8, -12); ctx.stroke(); ctx.fillStyle = '#ffe066'; ctx.beginPath(); ctx.arc(8, -12, 2.5, 0, 7); ctx.fill();
-  ctx.restore();
-}
 function drawPlatform(pl){
   const x = pl.x - camX, y = pl.y; if (x < -150 || x > W+20) return;
   ctx.fillStyle = '#8a5a32'; ctx.strokeStyle = '#3a2616'; ctx.lineWidth = 3;
@@ -1032,7 +679,6 @@ function draw(){
   drawTiles();
   platforms.forEach(drawPlatform);
   items.forEach(it => { if (!it.got) drawItem(it); });
-  if (warpFlower && !warpFlower.got) drawWarpFlower(warpFlower);
   enemies.forEach(drawEnemy);
   drawPlayer();
   parts.forEach(p => { ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.col; ctx.fillRect(p.x-camX-p.r/2,p.y-p.r/2,p.r,p.r); });
@@ -1041,14 +687,7 @@ function draw(){
   pops.forEach(p => { ctx.globalAlpha=Math.max(0,p.life); ctx.lineWidth=4; ctx.strokeStyle='rgba(43,33,24,.75)'; ctx.strokeText(p.txt,p.x-camX,p.y); ctx.fillStyle=p.col; ctx.fillText(p.txt,p.x-camX,p.y); });
   ctx.globalAlpha = 1; ctx.textAlign='left';
   ctx.restore();
-  if (state==='warping'){
-    const k = Math.min(1, warpT/1.2);
-    ctx.fillStyle = `rgba(40,16,70,${k})`; ctx.fillRect(0, 0, W, H);
-    ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(t*3);
-    for (let i=0;i<6;i++){ ctx.strokeStyle = `rgba(200,160,255,${k*(.7 - i*.1)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(0, 0, (1.1 - k)*420 + i*40, ((1.1 - k)*420 + i*40)*.6, i*.4, 0, Math.PI*1.5); ctx.stroke(); }
-    ctx.restore();
-  }
-  if (state!=='title' && state!=='warping') drawHUD();
+  if (state!=='title') drawHUD();
   if (state==='play' && (ready > 0 || readyGo > 0)){
     ctx.font='700 46px "Pixelify Sans", monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
     const txt = ready > .35 ? 'Ready…' : 'Go!';
@@ -1063,64 +702,16 @@ function draw(){
   }
 }
 
-
-// ---------- home screen chinchilla ----------
-// Same chinchilla as in the game, drawn big on the home canvas: blinks, chews, wags, and hops now and then.
-const homeScreenEl = document.getElementById('mainScreen');
-const HOME = { a:newAnim(), y:0, vy:0, hopT:2, hops:0, t:0 };
-const MOTES = (() => { const r = rng(3), m = []; for (let i=0;i<22;i++) m.push({ x:r()*W, y:r()*H, sp:8 + r()*16, ph:r()*6, s:1 + r()*2 }); return m; })();
-function homeHop(big){ if (HOME.y === 0){ HOME.vy = big ? -640 : -420; HOME.a.squash = -.12; } }
-homeCv.addEventListener('pointerdown', () => { homeHop(true); HOME.a.happy = 2.5; HOME.a.chew = .8; });
-document.getElementById('startBtn').addEventListener('pointerenter', () => { HOME.a.happy = Math.max(HOME.a.happy, 1.5); });
-function drawHome(dt){
-  const h = HOME, x = 230, ground = 448;
-  h.t += dt;
-  tickAnim(h.a, dt, 0, h.y === 0);
-  if (!reduceMotion){
-    h.hopT -= dt;
-    if (h.hopT <= 0 && h.y === 0){ homeHop(false); if (++h.hops < 2) h.hopT = .45; else { h.hops = 0; h.hopT = 3.5 + Math.random()*3; } }
-  }
-  if (h.y < 0 || h.vy < 0){ h.vy += 2400*dt; h.y += h.vy*dt; if (h.y >= 0){ if (h.vy > 300) h.a.squash = .14; h.y = 0; h.vy = 0; } }
-  const saved = ctx; ctx = homeCtx;
-  ctx.clearRect(0, 0, W, H);
-  // warm dust drifting up from the road
-  for (const m of MOTES){
-    const my = wrap(m.y - h.t*m.sp, H), mx = m.x + Math.sin(h.t*.8 + m.ph)*10, a = .25 + .45*Math.max(0, Math.sin(h.t*1.4 + m.ph*2));
-    ctx.globalAlpha = reduceMotion ? .35 : a; ctx.fillStyle = '#ffe2b0'; ctx.beginPath(); ctx.arc(mx, my, m.s, 0, 7); ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-  // shadow shrinks while in the air
-  const lift = Math.min(1, -h.y/120);
-  ctx.fillStyle = `rgba(10,6,14,${.45 - lift*.25})`; ctx.beginPath(); ctx.ellipse(x, ground + 2, 70*(1 - lift*.4), 12*(1 - lift*.4), 0, 0, 7); ctx.fill();
-  const air = h.y < 0;
-  drawChin('me', h.a, x, ground + h.y, { scale:.25, face:1, grounded:!air, speed:0, tilt: air ? Math.max(-.08, Math.min(.08, h.vy/6000)) : 0 });
-  ctx = saved;
-}
-const onHomeScreen = () => homeScreenEl.classList.contains('active');
-
 let last = performance.now();
 function loop(now){
-  // the next frame is booked first, so one bad frame can never stop the game
+  const dt = Math.min(.033, (now-last)/1000); last = now;
+  if (state!=='paused'){
+    // two half-steps keep fast falls from skipping through thin platforms
+    update(dt/2); update(dt/2);
+  }
+  draw();
   requestAnimationFrame(loop);
-  try {
-    const dt = Math.min(.033, (now-last)/1000); last = now;
-    if (onGameScreen()){
-      if (state!=='paused'){
-        // two half-steps keep fast falls from skipping through thin platforms
-        update(dt/2); update(dt/2);
-      }
-      draw();
-    } else if (onHomeScreen()) drawHome(dt);
-  } catch (err) { console.error(err); }
 }
 requestAnimationFrame(loop);
-// lets the village draw the same chinchilla
-window.Chin = { newAnim, tickAnim, draw(target, ...args){ const saved = ctx; ctx = target; drawChin(...args); ctx = saved; } };
 })();
 </script>
-  <script src="village.js"></script>
-  <script src="balloon.js"></script>
-  <script src="boat.js"></script>
-  <script src="worldgames.js"></script>
-</body>
-</html>
