@@ -3047,6 +3047,8 @@ const REALMS = [
 ];
 // the newer realms can be opened right from their flickering portals in the Portal HQ, by winning their game
 const TRIAL_REALMS = ['sea', 'fantasy', 'west', 'arts'];
+// ...but only the next realm in line flickers; the rest stay sealed until you've opened the ones before them
+const trialOpen = id => !realmOpen(id) && TRIAL_REALMS.includes(id) && UNLOCK_ORDER.find(r => !realmOpen(r)) === id;
 function playRealmTrial(id){ closePanels(); transition(() => startWorldGame(id, 'hq'), true); }
 const HOLLOW_GATE = { x:690, y:56 };
 const realmOpen = id => id === 'thistledown' || Save.flag('wgWin_' + id) || (!!JOINED_PAIRS[id] && Save.flag('wgWin_' + JOINED_PAIRS[id]));
@@ -3268,7 +3270,7 @@ function drawHQ(){
   // the portals: twelve of them now, so they're slim, and the name of the one you're standing at shows above
   const PO = 30, PI_ = 23, here_ = HQ_PORTALS.reduce((m, p) => Math.abs(p.x - P.x) < Math.abs(m.x - P.x) ? p : m, HQ_PORTALS[0]);
   for (const p of HQ_PORTALS){
-    const on = realmOpen(p.id), x = p.x, top = GROUND - 170, trial = !on && TRIAL_REALMS.includes(p.id);
+    const on = realmOpen(p.id), x = p.x, top = GROUND - 170, trial = trialOpen(p.id);
     ctx.fillStyle = '#4a3a6a'; ctx.beginPath(); ctx.moveTo(x - PO, GROUND); ctx.lineTo(x - PO, top + 50); ctx.arc(x, top + 50, PO, Math.PI, 0); ctx.lineTo(x + PO, GROUND); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#5a4a7e'; for (let k=0;k<7;k++){ const a = Math.PI + k/6*Math.PI; ctx.save(); ctx.translate(x + Math.cos(a)*(PO - 4), top + 50 + Math.sin(a)*(PO - 4)); ctx.rotate(a + Math.PI/2); ctx.fillRect(-5, -3, 10, 6); ctx.restore(); }
     ctx.save(); ctx.beginPath(); ctx.moveTo(x - PI_, GROUND); ctx.lineTo(x - PI_, top + 50); ctx.arc(x, top + 50, PI_, Math.PI, 0); ctx.lineTo(x + PI_, GROUND); ctx.closePath(); ctx.clip();
@@ -3292,7 +3294,7 @@ function drawHQ(){
     if (p.id === hqFrom){ ctx.fillStyle = 'rgba(255,246,228,.85)'; ctx.font = '700 12px "Pixelify Sans", monospace'; ctx.textAlign = 'center'; ctx.fillText('▼', x, GROUND - 178 + Math.sin(t*3)*2); ctx.textAlign = 'left'; }
   }
   // the name sign for the portal you're standing at
-  { const p = here_, on = realmOpen(p.id), trial = !on && TRIAL_REALMS.includes(p.id), r = REALMS.find(q => q.id === p.id);
+  { const p = here_, on = realmOpen(p.id), trial = trialOpen(p.id), r = REALMS.find(q => q.id === p.id);
     const txt = on ? (p.label ? `${p.label}: ${r.name}` : r.name) : trial ? `${p.label ? p.label + ' ' : ''}? ? ?  (flickering)` : p.label ? `${p.label} (sealed)` : 'A sealed portal';
     ctx.font = '700 13px "Pixelify Sans", monospace'; const tw = ctx.measureText(txt).width + 26, nx = clamp(p.x, tw/2 + 8, W - tw/2 - 8);
     ctx.fillStyle = 'rgba(20,12,36,.9)'; rr(nx - tw/2, GROUND - 222, tw, 26, 8); ctx.fill(); ctx.strokeStyle = on || trial ? `rgba(${p.col},.8)` : 'rgba(160,140,200,.4)'; ctx.lineWidth = 2; ctx.stroke();
@@ -3306,10 +3308,10 @@ function drawHQ(){
 SECRETS.hq = { start:400, draw:drawHQ, max:760, get spots(){
   return [
     ...HQ_PORTALS.map(p => { const r = REALMS.find(q => q.id === p.id), on = realmOpen(p.id);
-      const trial = !on && TRIAL_REALMS.includes(p.id);
+      const trial = trialOpen(p.id);
       return { x:p.x, r:30, hit:[p.x - 32, p.x + 32], stand:p.x, gap:0,
         label: trial ? `Touch the flickering ${p.label || 'portal'}` : !on ? `A sealed ${p.label || 'portal'}` : p.id === hqFrom ? `Go back through the ${p.label || 'portal'}` : p.label ? `Step through the ${p.label}` : `Step through to ${r.name}`,
-        open:() => on ? travelTo(p.id) : trial ? playRealmTrial(p.id) : p.id === 'warp' ? openMystery('A Strange Sealed Portal', 'This portal is sealed, and its stone is covered in swirling marks… the same marks as the round door at the bottom of Thistledown’s well.', '') : openMystery('A Sealed Portal', `This portal is sealed with old stone. It will open once you’ve won ${r.name}’s game.`, '') }; }),
+        open:() => on ? travelTo(p.id) : trial ? playRealmTrial(p.id) : p.id === 'warp' ? openMystery('A Strange Sealed Portal', 'This portal is sealed, and its stone is covered in swirling marks… the same marks as the round door at the bottom of Thistledown’s well.', '') : openMystery('A Sealed Portal', TRIAL_REALMS.includes(p.id) ? `This portal is sealed with old stone. ${r.name} is further along the path: open the realms before it first, and this portal will start to flicker.` : `This portal is sealed with old stone. It will open once you’ve won ${r.name}’s game.`, '') }; }),
     { x:W/2, r:0, hit:[W/2 - 40, W/2 + 40], hitY:[60, 190], stand:W/2, gap:0, hidden:true, label:'', open:() => openMystery('The Shift Stone', `A great crystal humming with the light of every realm you’ve opened: ${HQ_PORTALS.filter(p => realmOpen(p.id)).length} of ${HQ_PORTALS.length} so far.`, '') },
   ]; } };
 
