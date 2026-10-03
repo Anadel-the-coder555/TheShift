@@ -1632,7 +1632,8 @@ const PARK = (() => {
 // Jump over pits and snakes, slide under darts and low beams, and burst out into the daylight.
 const TEMPLE = (() => {
   const GOAL = 7200, PX = 330, FLOOR = 400, GRAV = 1900;
-  let things, x, y, vy, speed, slide, gap, gems, intro, stumble, done, doneT, dust, falling, fp;
+  const SLIDE = .7, HIT_COST = 75, CATCH_UP = 18;   // how long a slide lasts, how close a stumble lets the boulder come, how fast it falls back
+  let things, x, y, vy, speed, slide, slideQ, gap, gems, intro, stumble, done, doneT, dust, falling, fp;
   function build(){
     const r = rng(1937); things = [];
     for (let d = 700; d < GOAL - 400; d += 300 + r()*230){
@@ -1646,16 +1647,16 @@ const TEMPLE = (() => {
     }
   }
   const pitAt = px => things.find(o => o.k === 'pit' && px > o.x + 10 && px < o.x + o.w - 10);
-  function hit(txt){ if (stumble > 0) return; stumble = .6; gap -= 95; shake = .35; pop(PX + x, y - 90, txt, '#ffd0d3'); }
+  function hit(txt){ if (stumble > 0) return; stumble = .6; gap -= HIT_COST; shake = .35; pop(PX + x, y - 90, txt, '#ffd0d3'); }
   return {
     title:'Temple of the Golden Acorn', sub:'An adventure deep inside the jungle temple.',
     blurb:'Behind the waterfall, an old temple hides the legendary Golden Acorn idol. Grab it, and then run! A giant boulder will chase you all the way out.',
-    legend:['Space or ↑ to jump over pits and snakes', '↓ to slide under darts and low beams', 'Every stumble lets the boulder catch up', 'Grab the jewels on the way', 'Reach the daylight at the end!'],
+    legend:['Space or ↑ to jump over pits and snakes', '↓ to slide under darts and low beams (press it mid-jump to slide as you land)', 'Every stumble lets the boulder catch up', 'Grab the jewels on the way', 'Reach the daylight at the end!'],
     hints:['Space jump, ↓ slide', 'P to pause'], pad:['wgDown', 'wgAction'], actionLabel:'Jump',
     winTitle:'You escaped!', winText:'You dive out of the temple just as the boulder thunders past, the Golden Acorn idol safe in your paws.',
     loseTitle:'Squashed! (well, almost)', loseText:'The boulder rolls over you… and you pop back up, flat as a pancake. The idol rolls back to its pedestal. Try again!',
     againWinText:'Out into the sunshine again! The monkeys cheer from the trees.', againLoseText:'The boulder gets you! You puff back into shape and dust yourself off.',
-    reset(){ build(); x = 0; y = FLOOR; vy = 0; speed = 0; slide = 0; gap = 300; gems = 0; intro = 2.2; stumble = 0; done = false; doneT = 0; dust = []; falling = 0; },
+    reset(){ build(); x = 0; y = FLOOR; vy = 0; speed = 0; slide = 0; slideQ = false; gap = 300; gems = 0; intro = 2.2; stumble = 0; done = false; doneT = 0; dust = []; falling = 0; },
     seeds:() => gems, stats:() => `<span>Jewels ${gems}</span><span>Time ${time.toFixed(0)} s</span>`,
     update(dt){
       time += dt;
@@ -1666,13 +1667,16 @@ const TEMPLE = (() => {
       const onGround = y >= FLOOR && !falling;
       if ((input.pressed || input.up) && onGround && slide <= 0){ vy = -760; y = FLOOR - 1; }
       input.pressed = false;
-      if (input.down && onGround) slide = .5; else slide = Math.max(0, slide - dt);
+      // a ↓ tap counts even if it's let go before the next frame, and one pressed in the air slides as you land
+      if (input.taps.includes('down') || (input.down && !onGround)) slideQ = true;
+      input.taps.length = 0;
+      if ((input.down || slideQ) && onGround){ slide = SLIDE; slideQ = false; } else slide = Math.max(0, slide - dt);
       if (falling){ falling -= dt; if (falling <= 0){ falling = 0; y = FLOOR; vy = 0; if (fp) x = Math.max(x, fp.x + fp.w + 12 - PX); fp = null; } }
       else if (y < FLOOR){ vy += GRAV*dt; y += vy*dt; if (y >= FLOOR){ y = FLOOR; vy = 0; if (pitAt(PX + x)){ fp = pitAt(PX + x); falling = .6; hit('Whoa!'); } } }
       else if (pitAt(PX + x)){ fp = pitAt(PX + x); falling = .6; hit('Whoa!'); }
       if (!falling) x += speed*dt;
       // the boulder creeps back if you run cleanly
-      gap = Math.min(300, gap + 12*dt);
+      gap = Math.min(300, gap + CATCH_UP*dt);
       for (const o of things){
         const dx = o.x - (PX + x);
         if (o.k === 'gem' && !o.got && Math.abs(dx) < 24 && Math.abs(o.y - (y - 30)) < 40){ o.got = true; gems++; anim.chew = .3; }
