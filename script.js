@@ -38,7 +38,7 @@ const cityMusic = document.getElementById('cityMusic');     // Calling..., while
 const skiMusic = document.getElementById('skiMusic');       // Dragonfly High, for Moonlight Slalom
 const raceMusic = document.getElementById('raceMusic');     // Don't Mess With A Spy, for the Neon Grand Prix
 const westernMusic = document.getElementById('westernMusic'); // Turn Back, for the Outlaws of the West
-const filmMusic = document.getElementById('filmMusic'); // Turn Back, for the Outlaws of the West
+const filmMusic = document.getElementById('filmMusic'); // French Piano, for the silent film
 const coralMusic = document.getElementById('coralMusic'); // Heart and Soul, for the Coral Reef
 const outlawMusic = document.getElementById('outlawMusic'); // Don't Mess With A Spy, for the Outlaws of the West
 // worlds with their own song while you explore them
@@ -62,7 +62,8 @@ const SOUND_KEY = 'theShift.musicOn';
 let musicOn = true;
 try { musicOn = localStorage.getItem(SOUND_KEY) !== 'false'; } catch (e) {}
 
-const ALL_SONGS = [bgMusic, gameMusic, climbMusic, homeMusic, lakeMusic, vineMusic, jungleMusic, villageMusic, cityMusic, skiMusic, raceMusic, westernMusic, filmMusic, coralMusic];
+// every looping <audio> is a song, so a newly added one is stopped and muted along with the rest
+const ALL_SONGS = [...document.querySelectorAll('audio[loop]')];
 function renderSound() {
   soundBtn.textContent = musicOn ? 'Music: On' : 'Music: Off';
   soundBtn.setAttribute('aria-pressed', String(musicOn));
@@ -91,7 +92,7 @@ function showScreen(screen) {
 }
 
 // games play the game song, except the world games listed here; everywhere else plays the main theme
-const WORLD_GAME_SONGS = { nebula: climbMusic, cafe: homeMusic, moonlake: homeMusic, jungle: vineMusic, ski: skiMusic, race: raceMusic, outlaws: raceMusic, ghosthotel: raceMusic, silentfilm: filmMusic, outlaws: outlawMusic };
+const WORLD_GAME_SONGS = { nebula: climbMusic, cafe: homeMusic, moonlake: homeMusic, jungle: vineMusic, ski: skiMusic, race: raceMusic, ghosthotel: raceMusic, silentfilm: filmMusic, outlaws: outlawMusic };
 let musicStarted = false;
 function currentTrack() {
   const worldGame = document.getElementById('worldGameScreen');
