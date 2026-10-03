@@ -136,16 +136,13 @@ function update(dt){
     endT += dt; vy = Math.min(vy + 160*dt, 90); by = Math.min(by + vy*dt, TREES - 30);
     if (endT > 1.8 && !shown) showEnd(false);
   } else if (state === 'warping'){
-    // drift into the cloud and get swirled away toward the next world you haven't found yet (its own game)
+    // drift into the cloud and get swirled away up to Hoverboard, in the Starry Nebula
     endT += dt; dist += SPEED*dt*Math.max(0, 1 - endT);
     by += (warpAt.y + 40 - by)*Math.min(1, dt*3);
     if (endT > 1.2){
       Save.addSeeds(seeds);
       state = 'title'; titleEl.hidden = false; endEl.hidden = true;
-      const nx = window.warpNext ? window.warpNext('thistledown') : null;
-      if (nx && nx.locked) startWorldGame(nx.game, 'windmill');
-      else if (nx) window.warpFromGame(nx.id);          // every world found: the cloud is a shortcut instead
-      else startWorldGame('nebula', 'windmill');
+      startWorldGame('nebula', 'windmill');
     }
   } else if (state === 'title'){
     by = 250 + Math.sin(t*1.4)*10;
