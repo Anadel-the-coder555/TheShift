@@ -76,8 +76,8 @@ let G = null, gid = null, from = null, state = 'title', t = 0, time = 0, pops = 
 // ---------- warp holes ----------
 // One game in every realm (played from inside that realm) has a warp hole that opens partway through
 // (Thistledown's is the cloud in the windmill balloon game). Jump in (click it or press E) and it takes you
-// toward the next world you haven't found: you play that world's own game, and winning it opens the world.
-// Once every world is found, the holes become shortcuts between them instead.
+// to the next world in line (each world's leads somewhere different; see WARP_LEADS in village.js). If you haven't
+// found that world yet you play its own game, and winning it opens the world; once it's open, the hole is a shortcut.
 const WARP_HOLE_GAMES = new Set(['temple', 'ski', 'race', 'sea', 'fairymemory', 'underground', 'arts', 'warp']);
 let hole = null, holeAt = Infinity, holeClock = 0, holeHere = null;
 const HOLE = { x:W - 104, y:146, r:46 };

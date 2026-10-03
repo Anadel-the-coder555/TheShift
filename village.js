@@ -3091,12 +3091,17 @@ function travelTo(id){
 }
 // warp holes in the games: where they can take you (any other realm you've opened), and the trip itself
 window.warpTargets = here => REALMS.filter(r => r.id !== here && realmOpen(r.id)).map(r => ({ id:r.id, name:r.name, col:(HQ_PORTALS.find(p => p.id === r.id) || { col:'200,160,255' }).col }));
-// the worlds open in this order; each warp leads to the first one you haven't found yet (THE WARP comes last, through the well)
+// the worlds open in this order (THE WARP comes last, through the well)
 const UNLOCK_ORDER = ['jungle', 'moonlake', 'city', 'sea', 'fantasy', 'west', 'arts'];
+// each world's warp hole has a place of its own to lead: on to the next world in line, so no two worlds'
+// warps go to the same place. (Joined halves share their world's warp; Harmony Hollow's leads home, and THE WARP's back to the start.)
+const WARP_LEADS = { jungle:'moonlake', moonlake:'city', city:'sea', nebula:'sea', sea:'fantasy', fantasy:'west', west:'arts', underground:'arts', arts:'thistledown', warp:'jungle', nograv:'jungle' };
 window.warpNext = here => {
-  const id = UNLOCK_ORDER.find(r => !realmOpen(r)), col = r => (HQ_PORTALS.find(p => p.id === r) || { col:'200,160,255' }).col;
-  if (id) return { id, name:(REALMS.find(r => r.id === id) || { name:id }).name, col:col(id), locked:true, game:id === 'city' ? 'nebula' : id };   // Neon City & the Nebula opens with Hoverboard
-  const open = window.warpTargets(here); return open.length ? open[Math.floor(Math.random()*open.length)] : null;   // everything found: a shortcut instead
+  const id = WARP_LEADS[here]; if (!id) return null;
+  const name = (REALMS.find(r => r.id === id) || { name:id }).name, col = (HQ_PORTALS.find(p => p.id === id) || { col:'200,160,255' }).col;
+  // a world you haven't found yet: you play its game to open it (Neon City & the Nebula opens with Hoverboard)
+  if (!realmOpen(id)) return { id, name, col, locked:true, game:id === 'city' ? 'nebula' : id };
+  return { id, name, col };   // already open: a shortcut straight there
 };
 window.warpFromGame = id => { closePanels(); climbing = null; fadeDir = 0; fadeA = 0; showScreen(screenEl); travelTo(id); };
 // THE WARP is the last realm: its stone door opens only once every other realm is open
