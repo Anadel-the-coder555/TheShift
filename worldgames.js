@@ -4585,7 +4585,9 @@ const MERMAID = (() => {
     seeds:() => Math.floor(score/4) + (stage === 'done' ? 10 : 0), stats:() => `<span>Friends ${friends.length}/3</span><span>Pearl drops ${score}</span><span>Shells ${Math.max(0, hearts)}</span>`,
     update(dt){
       time += dt; stageT += dt; inv = Math.max(0, inv - dt); pipT = Math.max(0, pipT - dt); flash = Math.max(0, flash - dt); hintT = Math.max(0, hintT - dt);
-      if (talk){ talk.t += dt; if (talk.t > clamp(talk.text.length*.05, 2.8, 5.5) || (input.click && talk.t > .3)){ input.click = null; nextTalk(); } }
+      // a click skips talking, except a click on a tail card while choosing: that picks the tail
+      const onCard = stage === 'choose' && input.click && input.click.y > 200 && input.click.y < 400 && (Math.abs(input.click.x - 300) < 90 || Math.abs(input.click.x - 500) < 90);
+      if (talk){ talk.t += dt; if (talk.t > clamp(talk.text.length*.05, 2.8, 5.5) || (input.click && !onCard && talk.t > .3)){ input.click = null; nextTalk(); } }
       const taps = input.taps.splice(0); const sang = input.pressed; input.pressed = false; input.keys.length = 0;
       pings.forEach(g => g.t += dt); pings = pings.filter(g => g.t < 2.4);
 
